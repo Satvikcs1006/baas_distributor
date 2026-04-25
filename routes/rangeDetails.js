@@ -19,7 +19,7 @@ router.get("/range-details", async (req, res) => {
     start_ts,
     end_ts,
     timeDriven_min,
-    kmDriven,
+    kmDriven * 1.1 as kmDriven ,
     socCohort
   FROM iceberg.silver.baas_daily_range_log
   WHERE deviceId = '${deviceId}'
