@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="en">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Battery Dashboard</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #222;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    .search-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      background: #fff;
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .search-bar input,
+    .search-bar select {
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .search-bar input {
+      flex: 1;
+    }
+
+    .search-bar button {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 8px;
+      background: #1f6feb;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .search-bar button:hover {
+      background: #1558c0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      font-size: 20px;
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      row-gap: 10px;
+      column-gap: 12px;
+    }
+
+    .label {
+      font-weight: bold;
+      color: #555;
+    }
+
+    .value {
+      color: #222;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f0f3f7;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-right: 6px;
+      margin-bottom: 4px;
+    }
+
+    .tag-low {
+      background: #ffe0e0;
+      color: #b30000;
+    }
+
+    .tag-avg {
+      background: #fff3cd;
+      color: #8a6d00;
+    }
+
+    .tag-good {
+      background: #d4f8d4;
+      color: #146c2e;
+    }
+
+    .tag-warning {
+      background: #ffe8b3;
+      color: #7a5600;
+    }
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+  background: white;
+  margin: 40px auto;
+  padding: 20px;
+  width: 85%;
+  max-height: 80vh;
+  overflow-y: auto;
+  border-radius: 12px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.close-btn {
+  cursor: pointer;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.modal-body table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.modal-body th,
+.modal-body td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  font-size: 13px;
+  text-align: left;
+}
+    
+    .graph-placeholder {
+      height: 220px;
+      border: 2px dashed #b8c2cc;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #777;
+      background: #fafbfc;
+      margin-top: 12px;
+    }
+
+    .summary-box {
+      background: #f8fbff;
+      border-left: 5px solid #1f6feb;
+      padding: 14px;
+      border-radius: 8px;
+      line-height: 1.6;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .csat-box {
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-weight: bold;
+  background: #eee;
+  color: #333;
+}
+
+
+    .suggestion-box {
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 12px 16px;
+  background: #f8f9fb;
+  border-left: 4px solid #3b82f6;
+  border-radius: 8px;
+}
+
+input[type="datetime-local"] {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.tms-link {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.tms-link:hover {
+  text-decoration: underline;
+}
+
+.suggestion-line {
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.suggestion-item {
+  margin-bottom: 12px;
+}
+
+.suggestion-item strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.tms-link {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.tms-link:hover {
+  text-decoration: underline;
+}
+
+.csat-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+.csat-table th,
+.csat-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.csat-table th {
+  background: #f0f3f7;
+}
+
+.csat-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.csat-green {
+  background: #d4f8d4;
+  color: #146c2e;
+}
+
+.csat-orange {
+  background: #fff3cd;
+  color: #8a6d3b;
+}
+
+.csat-red {
+  background: #ffe0e0;
+  color: #b30000;
+}
+
+.csat-grey {
+  background: #ececec;
+  color: #555;
+}
+
+
+.tickets-table-wrapper {
+  max-height: 420px;
+  overflow-y: auto;
+  overflow-x: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+
+.small-tag {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.tag-red {
+  background: #ffe0e0;
+  color: #b30000;
+}
+
+.tag-green {
+  background: #d4f8d4;
+  color: #146c2e;
+}
+
+.tag-orange {
+  background: #fff3cd;
+  color: #8a6d3b;
+}
+
+.tag-grey {
+  background: #ececec;
+  color: #555;
+}
+
+    .secondary-btn {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 8px;
+      background: #198754;
+      color: white;
+      cursor: pointer;
+    }
+
+    .secondary-btn:hover {
+      background: #146c43;
+    }
+
+    .muted {
+      color: #666;
+      font-size: 13px;
+    }
+
+    @media (max-width: 1000px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .details-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="page-title">Battery Operations Dashboard</div>
+
+<div class="search-bar">
+  <input
+    type="text"
+    id="driverId"
+    placeholder="Enter Driver ID"
+    onkeydown="handleDriverSearchKey(event)"
+  />
+
+  <button onclick="searchBattery()">Search Driver</button>
+
+  <input
+    type="text"
+    id="batteryIdSelector"
+    list="batteryIdOptions"
+    placeholder="Select / Enter Battery ID"
+    onkeydown="handleBatterySearchKey(event)"
+  />
+
+  <datalist id="batteryIdOptions"></datalist>
+
+  <button onclick="searchSelectedBattery()">Search Battery</button>
+</div>
+
+
+    <div class="grid">
+  <div class="card full-width">
+    <h2>Driver Details</h2>
+    <div class="details-grid" id="driverDetails">
+      <div class="label">Driver ID</div><div class="value">-</div>
+      <div class="label">Battery ID</div><div class="value">-</div>
+      <div class="label">Device ID</div><div class="value">-</div>
+      <div class="label">Serial No</div><div class="value">-</div>
+
+    </div>
+  </div>
+
+  
+
+      
+
+      <div class="card full-width">
+        <h2>Range Details</h2>
+        <div class="muted">Battery range details for selected time period</div>
+        <table>
+          <thead>
+  <tr>
+    <th>Date</th>
+    <th>Device ID</th>
+    <th>Start TS</th>
+    <th>End TS</th>
+    <th>Time Driven (min)</th>
+    <th>KM Driven</th>
+    <th>SOC Cohort</th>
+    <th>Range Tag</th>
+  </tr>
+</thead>
+<tbody id="rangeTableBody">
+  <tr>
+    <td colspan="8">No data loaded yet.</td>
+  </tr>
+</tbody>
+        </table>
+      </div>
+
+      
+
+
+      <div class="card full-width">
+        <h2>Battery IoT Dashboard</h2>
+
+        <div class="action-row">
+        
+          </select>
+          <button class="secondary-btn" onclick="mosfetOn()">TURN MOSFET ON</button>
+
+<button 
+  style="background:#dc3545; color:white; border:none; padding:8px 14px; border-radius:8px; cursor:pointer;"
+  onclick="mosfetOff()"
+>
+  TURN MOSFET OFF
+</button>
+          
+        </div>
+
+        <div class="details-grid" style="margin-bottom: 16px;">
+          <div class="label">Current MOSFET Status</div><div class="value" id="mosfetStatus">-</div>
+          <div class="label">Critical Alerts</div><div class="value" id="criticalAlerts">-</div>
+        </div>
+
+        
+
+        <h3 style="margin-top: 20px;">MOSFET History</h3>
+<table>
+  <thead>
+    <tr>
+      <th>Status</th>
+      <th>Done By</th>
+      <th>Done At</th>
+    </tr>
+  </thead>
+  <tbody id="mosfetHistoryTableBody">
+    <tr>
+      <td colspan="3">No MOSFET history loaded yet.</td>
+    </tr>
+  </tbody>
+</table>
+
+        
+      </div>
+    </div>
+  </div>
+
+
+
+
+  <script>
+  let currentDriverData = null;
+  let allChargingRows = [];
+  let iotChartInstance = null;
+  let driverBatteryRows = [];
+
+  async function searchBattery() {
+  const driverId = document.getElementById("driverId").value.trim();
+
+  if (!driverId) {
+    alert("Please enter Driver ID");
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/driver-details?driverId=${encodeURIComponent(driverId)}`);
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to fetch driver details");
+    }
+
+    driverBatteryRows = Array.isArray(result.data) ? result.data : [];
+
+    if (driverBatteryRows.length === 0) {
+      alert("No batteries found for this driver");
+      renderDriverDetails(null);
+      return;
+    }
+
+    populateBatteryDropdown(driverBatteryRows);
+
+    currentDriverData = driverBatteryRows[0];
+
+    document.getElementById("batteryIdSelector").value =
+      currentDriverData.batteryId ?? currentDriverData.batteryid ?? "";
+
+    loadSelectedBatteryData(currentDriverData);
+
+  } catch (error) {
+    console.error(error);
+    alert(error.message);
+    renderDriverDetails(null);
+  }
+}
+
+function populateBatteryDropdown(rows) {
+  const datalist = document.getElementById("batteryIdOptions");
+
+  datalist.innerHTML = rows.map(row => {
+    const batteryId = row.batteryId ?? row.batteryid ?? "";
+    return batteryId ? `<option value="${batteryId}"></option>` : "";
+  }).join("");
+}
+
+function searchSelectedBattery() {
+  const selectedBatteryId = document.getElementById("batteryIdSelector").value.trim();
+
+  if (!selectedBatteryId) {
+    alert("Please select or enter Battery ID");
+    return;
+  }
+
+  const selectedRow = driverBatteryRows.find(row => {
+    const batteryId = row.batteryId ?? row.batteryid;
+    return String(batteryId) === selectedBatteryId;
+  });
+
+  if (!selectedRow) {
+    alert("This Battery ID was not found in the driver search result");
+    return;
+  }
+
+  currentDriverData = selectedRow;
+  loadSelectedBatteryData(currentDriverData);
+}
+
+function loadSelectedBatteryData(driverData) {
+  const days = 7;
+
+  renderDriverDetails(driverData);
+  loadRangeDetails(driverData, days);
+  loadIotDetails(driverData);
+  loadMosfetHistory(driverData);
+  loadCriticalAlerts(driverData);
+}
+
+function handleBatterySearchKey(event) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    searchSelectedBattery();
+  }
+}
+function handleBatterySelection() {
+  const selectedBatteryId = document.getElementById("batteryIdSelector").value.trim();
+
+  if (!selectedBatteryId) return;
+
+  const selectedRow = driverBatteryRows.find(row => {
+    const batteryId = row.batteryId || row.batteryid;
+    return String(batteryId) === selectedBatteryId;
+  });
+
+  if (!selectedRow) {
+    alert("Battery ID not found in driver search result");
+    return;
+  }
+
+  currentDriverData = selectedRow;
+
+
+  renderDriverDetails(currentDriverData);
+  loadRangeDetails(currentDriverData, 7);
+  loadIotDetails(currentDriverData);
+  loadMosfetHistory(currentDriverData);
+  loadCriticalAlerts(currentDriverData);
+
+}
+
+  function renderDriverDetails(data) {
+    const container = document.getElementById("driverDetails");
+
+    if (!data) {
+      container.innerHTML = `
+  <div class="label">Driver ID</div><div class="value">${data.driverId ?? data.driverid ?? "-"}</div>
+  <div class="label">Battery ID</div><div class="value">${data.batteryId ?? data.batteryid ?? "-"}</div>
+  <div class="label">Device ID</div><div class="value">${data.deviceID ?? data.deviceId ?? data.deviceid ?? "-"}</div>
+  <div class="label">Serial No</div><div class="value">${data.serialNo ?? data.serialno ?? "-"}</div>
+`;
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="label">Driver ID</div><div class="value">${data.driverId ?? "-"}</div>
+      <div class="label">Battery ID</div><div class="value">${data.batteryId ?? "-"}</div>
+      <div class="label">Device ID</div><div class="value">${data.deviceID ?? "-"}</div>
+      <div class="label">Serial No</div><div class="value">${data.serialNo ?? "-"}</div>
+    `;
+  }
+
+  
+
+  async function loadRangeDetails(driverData, days) {
+  const deviceId = driverData?.deviceID || driverData?.deviceid;
+
+  if (!deviceId) {
+    document.getElementById("rangeTableBody").innerHTML =
+      `<tr><td colspan="8">No deviceId found</td></tr>`;
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/range-details?deviceId=${encodeURIComponent(deviceId)}&days=${days}`);
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to fetch range details");
+    }
+
+    renderRangeTable(result.data);
+
+  } catch (error) {
+    console.error("Range error:", error);
+    document.getElementById("rangeTableBody").innerHTML =
+      `<tr><td colspan="8">Error loading data</td></tr>`;
+  }
+}
+  
+function updateTmsLink(driverId) {
+  const link = document.getElementById("tmsLink");
+
+  if (!driverId) {
+    link.href = "#";
+    return;
+  }
+
+  link.href = `https://optimus.upgrid.in/complainant/${driverId}?showFilters=false`;
+}
+
+async function loadTickets(driverId) {
+  if (!driverId) return;
+
+  try {
+    const response = await fetch(
+      `/api/tickets?driverId=${encodeURIComponent(driverId)}`
+    );
+    const result = await response.json();
+
+    console.log("Tickets API:", result);
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to fetch tickets");
+    }
+
+    renderTickets(result.data);
+  } catch (error) {
+    console.error("Tickets error:", error);
+    document.getElementById("ticketsTableBody").innerHTML =
+      `<tr><td colspan="17">Error loading tickets</td></tr>`;
+  }
+}
+
+async function mosfetOff() {
+  if (!currentDriverData) {
+    alert("No driver data available");
+    return;
+  }
+
+  const serialNo = currentDriverData.serialNo || currentDriverData.serialno;
+
+  if (!serialNo) {
+    alert("Serial number not found");
+    return;
+  }
+
+  if (!confirm("Are you sure you want to turn MOSFET OFF?")) {
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/mosfet-off", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ serialNo })
+    });
+
+    const result = await response.json();
+
+    console.log("MOSFET OFF API response:", result);
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to trigger MOSFET OFF");
+    }
+
+    alert("MOSFET OFF command sent successfully");
+
+  } catch (error) {
+    console.error("MOSFET OFF error:", error);
+    alert("Error: " + error.message);
+  }
+}
+
+
+async function loadTickets(driverId) {
+  if (!driverId) return;
+
+  try {
+    const response = await fetch(
+      `/api/tickets?driverId=${encodeURIComponent(driverId)}`
+    );
+    const result = await response.json();
+
+    console.log("Tickets API:", result);
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to fetch tickets");
+    }
+
+    renderTickets(result.data);
+  } catch (error) {
+    console.error("Tickets error:", error);
+    document.getElementById("ticketsTableBody").innerHTML =
+      `<tr><td colspan="17">Error loading tickets</td></tr>`;
+  }
+}
+
+function renderTickets(rows) {
+  const tbody = document.getElementById("ticketsTableBody");
+
+  if (!rows || rows.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="17">No tickets found</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map((row) => `
+    <tr>
+      <td>${row.ticket_slug ?? "-"}</td>
+      <td>${row.issue_category ?? "-"}</td>
+      <td>${row.issue ?? "-"}</td>
+      <td>${renderStatusTag(row.status)}</td>
+      <td>${row.call_outcome ?? "-"}</td>
+      <td>${row.done_by ?? "-"}</td>
+      <td>${row.source ?? "-"}</td>
+      <td>${formatDateTime(row.ticket_created_at)}</td>
+      <td>${formatDateTime(row.logs_created_at)}</td>
+      <td>${row.assignee_employee_id ?? "-"}</td>
+      <td>${row.zone ?? "-"}</td>
+      <td>${row.resolution ?? "-"}</td>
+      <td>${row.owner_of_pendency ?? "-"}</td>
+      <td>${Number(row.first_failure_remote_diag) === 1 ? renderBinaryTag("Yes", "red") : renderBinaryTag("No", "green")}</td>
+      <td>${row.tat_bucket ?? "-"}</td>
+      <td>${Number(row.repeat_flag) === 1 ? renderBinaryTag("Yes", "orange") : renderBinaryTag("No", "green")}</td>
+      <td>${row.repeat_ticket_slug ?? "-"}</td>
+    </tr>
+  `).join("");
+}
+
+function renderStatusTag(status) {
+  const value = String(status ?? "-").toLowerCase();
+
+  let cls = "tag-grey";
+  if (["completed", "qc_passed"].includes(value)) cls = "tag-green";
+  else if (["assigned", "in_progress"].includes(value)) cls = "tag-orange";
+  else if (["qc_failed"].includes(value)) cls = "tag-red";
+
+  return `<span class="small-tag ${cls}">${status ?? "-"}</span>`;
+}
+
+function renderBinaryTag(text, tone) {
+  const cls =
+    tone === "green" ? "tag-green" :
+    tone === "red" ? "tag-red" :
+    tone === "orange" ? "tag-orange" :
+    "tag-grey";
+
+  return `<span class="small-tag ${cls}">${text}</span>`;
+}
+
+    function renderRangeTable(rows) {
+  const tbody = document.getElementById("rangeTableBody");
+
+  if (!rows || rows.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8">No data found</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map((row) => {
+    const kmDriven = Number(row.kmDriven ?? 0);
+    const socCohort = row.socCohort ?? "-";
+
+    // Extract lower bound from "20-30"
+    let lowerBound = 0;
+
+    if (socCohort && socCohort.includes("-")) {
+      lowerBound = Number(socCohort.split("-")[0]);
+    }
+
+    let ratio = 0;
+    if (lowerBound > 0) {
+      ratio = kmDriven / lowerBound;
+    }
+
+    if (lowerBound == 0) {
+      ratio = kmDriven / 5;
+    }
+
+    let rangeTag = "GOOD";
+    let rangeClass = "tag-good";
+
+    if (ratio <= 0.75) {
+      rangeTag = "LOW";
+      rangeClass = "tag-low";
+    }
+
+    return `
+      <tr>
+        <td>${formatDate(row.date)}</td>
+        <td>${row.deviceId ?? "-"}</td>
+        <td>${formatDateTime(row.start_ts)}</td>
+        <td>${formatDateTime(row.end_ts)}</td>
+        <td>${row.timeDriven_min ?? "-"}</td>
+        <td>${row.kmDriven ?? "-"}</td>
+        <td>${row.socCohort ?? "-"}</td>
+        <td><span class="tag ${rangeClass}">${rangeTag}</span></td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function formatDate(value) {
+  if (!value) return "-";
+  const d = new Date(value);
+  if (isNaN(d)) return value;
+  return d.toLocaleDateString();
+}
+
+function formatDateTime(value) {
+  if (!value) return "-";
+  const d = new Date(value);
+  if (isNaN(d)) return value;
+  return d.toLocaleString();
+}
+
+function setDefaultIotTimeRange() {
+  const end = new Date();
+  const start = new Date(end.getTime() - 24 * 60 * 60 * 1000);
+
+  document.getElementById("iotStartTime").value = formatDateTimeLocal(start);
+  document.getElementById("iotEndTime").value = formatDateTimeLocal(end);
+}
+
+function formatDateTimeLocal(date) {
+  const pad = (n) => String(n).padStart(2, "0");
+
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+  
+async function loadChargingDetails(driverData, days) {
+  const deviceId = driverData?.deviceID || driverData?.deviceid;
+
+  if (!deviceId) {
+    document.getElementById("chargingTableBody").innerHTML =
+      `<tr><td colspan="8">No deviceId found</td></tr>`;
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `/api/charging-details?deviceId=${encodeURIComponent(deviceId)}&days=${days}`
+    );
+    const result = await response.json();
+
+    console.log("Charging API response:", result);
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to fetch charging details");
+    }
+
+    allChargingRows = Array.isArray(result.data) ? result.data : [];
+    document.getElementById("chargingStateFilter").value = "charging";
+    applyChargingFilter();
+  } catch (error) {
+    console.error("Charging error:", error);
+    document.getElementById("chargingTableBody").innerHTML =
+      `<tr><td colspan="8">Error loading charging data</td></tr>`;
+  }
+}
+
+async function loadIotGraph(driverData) {
+  const deviceId = driverData?.deviceID || driverData?.deviceid;
+
+  if (!deviceId) {
+    return;
+  }
+
+  const startTime = document.getElementById("iotStartTime").value;
+  const endTime = document.getElementById("iotEndTime").value;
+
+  if (!startTime || !endTime) {
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `/api/iot-graph?deviceId=${encodeURIComponent(deviceId)}&startTime=${encodeURIComponent(startTime)}&endTime=${encodeURIComponent(endTime)}`
+    );
+
+    const result = await response.json();
+
+    console.log("IoT graph API:", result);
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to fetch IoT graph data");
+    }
+
+    renderIotGraph(result.data || []);
+  } catch (error) {
+    console.error("IoT graph error:", error);
+    alert("Error loading IoT graph");
+  }
+}
+
+async function loadIotGraph(driverData) {
+  const deviceId = driverData?.deviceID || driverData?.deviceid;
+
+  if (!deviceId) {
+    return;
+  }
+
+  const startTime = document.getElementById("iotStartTime").value;
+  const endTime = document.getElementById("iotEndTime").value;
+
+  if (!startTime || !endTime) {
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `/api/iot-graph?deviceId=${encodeURIComponent(deviceId)}&startTime=${encodeURIComponent(startTime)}&endTime=${encodeURIComponent(endTime)}`
+    );
+
+    const result = await response.json();
+
+    console.log("IoT graph API:", result);
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to fetch IoT graph data");
+    }
+
+    renderIotGraph(result.data || []);
+  } catch (error) {
+    console.error("IoT graph error:", error);
+    alert("Error loading IoT graph");
+  }
+}
+
+function renderIotGraph(rows) {
+  const ctx = document.getElementById("iotGraphCanvas").getContext("2d");
+
+  if (iotChartInstance) {
+    iotChartInstance.destroy();
+  }
+
+  if (!rows || rows.length === 0) {
+    iotChartInstance = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: [],
+        datasets: []
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: true
+          }
+        }
+      }
+    });
+    return;
+  }
+
+  const labels = rows.map(row => formatGraphLabel(row.ts));
+
+  iotChartInstance = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Voltage",
+          data: rows.map(row => row.voltage ?? null),
+          borderWidth: 2,
+          tension: 0.2
+        },
+        {
+          label: "Current",
+          data: rows.map(row => row.current ?? null),
+          borderWidth: 2,
+          tension: 0.2
+        },
+        {
+          label: "Temperature",
+          data: rows.map(row => row.temperature ?? null),
+          borderWidth: 2,
+          tension: 0.2
+        },
+        {
+          label: "SOC",
+          data: rows.map(row => row.soc ?? null),
+          borderWidth: 2,
+          tension: 0.2
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      interaction: {
+        mode: "index",
+        intersect: false
+      },
+      plugins: {
+        legend: {
+          display: true
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            maxTicksLimit: 10
+          }
+        },
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+}
+
+function formatGraphLabel(value) {
+  if (!value) return "-";
+  const d = new Date(value);
+  if (isNaN(d)) return value;
+  return d.toLocaleString();
+}
+
+function applyChargingFilter() {
+  const selectedState = document
+    .getElementById("chargingStateFilter")
+    .value
+    .trim()
+    .toLowerCase();
+
+  let filteredRows = allChargingRows;
+
+  if (selectedState !== "all") {
+    filteredRows = allChargingRows.filter((row) => {
+      const rowState = String(row.state ?? "").trim().toLowerCase();
+      return rowState === selectedState;
+    });
+  }
+
+  renderChargingTable(filteredRows);
+}
+
+function renderChargingTable(rows) {
+  const tbody = document.getElementById("chargingTableBody");
+
+  if (!rows || rows.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8">No data found</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map((row) => {
+    const startTime = row.startTs ? new Date(row.startTs) : null;
+    const endTime = row.endTs ? new Date(row.endTs) : null;
+
+    let durationMs = 0;
+    if (startTime && endTime && !isNaN(startTime) && !isNaN(endTime)) {
+      durationMs = endTime - startTime;
+    }
+
+    const durationMinutes = durationMs > 0 ? durationMs / (1000 * 60) : 0;
+    const durationFormatted = formatDuration(durationMs);
+
+    const startSoc = Number(row.startSoc ?? 0);
+    const endSoc = Number(row.endSoc ?? 0);
+
+    const socChange = Math.max(0, endSoc - startSoc);
+    const expectedMinutes = socChange * 3;
+
+    let speedTag = `<span class="small-tag tag-grey">NA</span>`;
+
+    if (socChange > 0 && durationMinutes > 0) {
+      if (durationMinutes <= expectedMinutes) {
+        speedTag = `<span class="small-tag tag-green">HIGH</span>`;
+      } else {
+        speedTag = `<span class="small-tag tag-red">LOW</span>`;
+      }
+    }
+
+    return `
+      <tr>
+        <td>${row.deviceId ?? "-"}</td>
+        <td>${row.state ?? "-"}</td>
+        <td>${formatDateTime(row.startTs)}</td>
+        <td>${formatDateTime(row.endTs)}</td>
+        <td>${row.startSoc ?? "-"}</td>
+        <td>${row.endSoc ?? "-"}</td>
+        <td>${durationFormatted}</td>
+        <td>${speedTag}</td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function formatDuration(durationMs) {
+  if (!durationMs || durationMs <= 0) return "-";
+
+  const totalSeconds = Math.floor(durationMs / 1000);
+  const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
+  const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
+  const seconds = String(totalSeconds % 60).padStart(2, "0");
+
+  return `${hours}:${minutes}:${seconds}`;
+}
+
+  async function loadIotDetails(driverData) {
+  const deviceId = driverData?.deviceID || driverData?.deviceid;
+
+  if (!deviceId) {
+    document.getElementById("mosfetStatus").textContent = "NO DEVICE ID";
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/iot-status?deviceId=${encodeURIComponent(deviceId)}`);
+    const result = await response.json();
+
+    console.log("IoT API response:", result);
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to fetch IoT status");
+    }
+
+    renderMosfetStatus(result.data);
+
+  } catch (error) {
+    console.error("IoT error:", error);
+    document.getElementById("mosfetStatus").textContent = "ERROR";
+  }
+}
+
+function renderMosfetStatus(data) {
+  const el = document.getElementById("mosfetStatus");
+
+  let text = "NO DATA";
+  let color = "#888";
+
+  const status = data?.dischargeFetStatus ?? data?.dischargefetstatus ?? null;
+
+  if (status === true) {
+    text = "ON";
+    color = "#146c2e";
+  } else if (status === false) {
+    text = "OFF";
+    color = "#b30000";
+  }
+
+  el.innerHTML = `
+    <span style="color:${color}; font-weight:bold;">
+      ${text}
+    </span>
+  `;
+}
+
+  async function mosfetOn() {
+  if (!currentDriverData) {
+    alert("No driver data available");
+    return;
+  }
+
+  const serialNo = currentDriverData.serialNo || currentDriverData.serialno;
+
+  if (!serialNo) {
+    alert("Serial number not found");
+    return;
+  }
+
+  if (!confirm("Are you sure you want to turn MOSFET ON?")) {
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/mosfet-on", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ serialNo })
+    });
+
+    const result = await response.json();
+
+    console.log("MOSFET API response:", result);
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to trigger MOSFET ON");
+    }
+
+    alert("MOSFET ON command sent successfully");
+
+  } catch (error) {
+    console.error("MOSFET error:", error);
+    alert("Error: " + error.message);
+  }
+}
+
+async function loadMosfetHistory(driverData) {
+  const serialNo = driverData?.serialNo || driverData?.serialno;
+
+  if (!serialNo) {
+    document.getElementById("mosfetHistoryTableBody").innerHTML =
+      `<tr><td colspan="3">No serial number found</td></tr>`;
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `/api/mosfet-history?serialNo=${encodeURIComponent(serialNo)}`
+    );
+    const result = await response.json();
+
+    console.log("MOSFET History API response:", result);
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to fetch MOSFET history");
+    }
+
+    renderMosfetHistoryTable(result.data);
+  } catch (error) {
+    console.error("MOSFET history error:", error);
+    document.getElementById("mosfetHistoryTableBody").innerHTML =
+      `<tr><td colspan="3">Error loading MOSFET history</td></tr>`;
+  }
+}
+
+function renderMosfetHistoryTable(rows) {
+  const tbody = document.getElementById("mosfetHistoryTableBody");
+
+  if (!rows || rows.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="3">No history found</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map((row) => {
+    const status = row.status_type ?? "-";
+    const doneBy = row.doneBy ?? row.doneby ?? "-";
+    const doneAt = row.done_at ?? "-";
+
+    let statusClass = "tag-warning";
+    if (status === "ON") statusClass = "tag-good";
+    if (status === "OFF") statusClass = "tag-low";
+
+    return `
+      <tr>
+        <td><span class="tag ${statusClass}">${status}</span></td>
+        <td>${doneBy}</td>
+        <td>${formatDateTime(doneAt)}</td>
+      </tr>
+    `;
+  }).join("");
+}
+
+async function loadCriticalAlerts(driverData) {
+  const serialNo = driverData?.serialNo || driverData?.serialno;
+
+  if (!serialNo) {
+    document.getElementById("criticalAlerts").textContent = "NO DATA";
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `/api/critical-alerts?serialNo=${encodeURIComponent(serialNo)}`
+    );
+    const result = await response.json();
+
+    console.log("Critical Alerts API response:", result);
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to fetch critical alerts");
+    }
+
+    renderCriticalAlerts(result.data);
+  } catch (error) {
+    console.error("Critical alerts error:", error);
+    document.getElementById("criticalAlerts").textContent = "ERROR";
+  }
+}
+
+async function loadCriticalAlerts(driverData) {
+  const serialNo = driverData?.serialNo || driverData?.serialno;
+
+  if (!serialNo) {
+    document.getElementById("criticalAlerts").textContent = "NO DATA";
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `/api/critical-alerts?serialNo=${encodeURIComponent(serialNo)}`
+    );
+    const result = await response.json();
+
+    console.log("Critical Alerts API response:", result);
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to fetch critical alerts");
+    }
+
+    renderCriticalAlerts(result.data);
+  } catch (error) {
+    console.error("Critical alerts error:", error);
+    document.getElementById("criticalAlerts").textContent = "ERROR";
+  }
+}
+
+function renderCriticalAlerts(data) {
+  const el = document.getElementById("criticalAlerts");
+  const value = data?.criticalAlert ?? data?.criticalalert ?? "NO DATA";
+
+  if (value === "Alert Battery") {
+    el.innerHTML = `<span style="color:#b30000; font-weight:bold;">Alert Battery</span>`;
+  } else if (value === "No Alert") {
+    el.innerHTML = `<span style="color:#146c2e; font-weight:bold;">No Alert</span>`;
+  } else {
+    el.innerHTML = `<span style="color:#888; font-weight:bold;">NO DATA</span>`;
+  }
+}
+
+function handleDriverSearchKey(event) {
+  if (event.key === "Enter") {
+    event.preventDefault(); // prevents page reload (important)
+    searchBattery();
+  }
+}
+
+async function loadSuggestions(driverId) {
+  if (!driverId) return;
+
+  try {
+    const response = await fetch(
+      `/api/suggestions?driverId=${encodeURIComponent(driverId)}`
+    );
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to fetch suggestions");
+    }
+
+    renderSuggestions(result.data);
+
+  } catch (error) {
+    console.error("Suggestions error:", error);
+    document.getElementById("suggestionsBox").innerHTML =
+      `<div>Error loading suggestions</div>`;
+  }
+}
+
+function renderSuggestions(rows) {
+  const box = document.getElementById("suggestionsBox");
+
+  if (!rows || rows.length === 0) {
+    box.innerHTML = `<div>No suggestions available</div>`;
+    return;
+  }
+
+  box.innerHTML = rows.map((row, index) => {
+    const text = row.suggestions ?? "-";
+
+    return `
+      <div class="suggestion-line">
+        ${index + 1}. ${text}
+      </div>
+    `;
+  }).join("");
+}
+
+async function loadCSAT(driverId) {
+  if (!driverId) return;
+
+  try {
+    const response = await fetch(
+      `/api/csat?driverId=${encodeURIComponent(driverId)}`
+    );
+    const result = await response.json();
+
+    console.log("CSAT API:", result);
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to fetch CSAT");
+    }
+
+    renderCSAT(result.data);
+
+  } catch (error) {
+    console.error("CSAT error:", error);
+    document.getElementById("csatBox").innerText = "CSAT: ERROR";
+  }
+}
+
+function renderCSAT(data) {
+  const el = document.getElementById("csatBox");
+
+  if (!data || data.rating === undefined || data.rating === null) {
+    el.innerText = "CSAT: NO DATA";
+    el.style.background = "#ccc";
+    el.style.color = "#333";
+    return;
+  }
+
+  const rating = Number(data.rating);
+
+  let bg = "#ccc";
+  let color = "#333";
+
+  if (rating > 75) {
+    bg = "#d4f8d4";   // green
+    color = "#146c2e";
+  } else if (rating >= 50) {
+    bg = "#fff3cd";   // orange
+    color = "#8a6d3b";
+  } else {
+    bg = "#ffe0e0";   // red
+    color = "#b30000";
+  }
+
+  el.innerText = `CSAT: ${rating}%`;
+  el.style.background = bg;
+  el.style.color = color;
+}
+
+function resetIotGraph() {
+  const canvas = document.getElementById("iotGraphCanvas");
+  const ctx = canvas.getContext("2d");
+
+  if (iotChartInstance) {
+    iotChartInstance.destroy();
+    iotChartInstance = null;
+  }
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+
+function openTicketDetailsFromHeader() {
+  const driverId = document.getElementById("driverId")?.value?.trim();
+
+  if (!driverId) {
+    alert("Search driver first");
+    return;
+  }
+  
+
+  openTicketDetails(driverId);
+}
+
+async function openTicketDetails(driverId) {
+  const modal = document.getElementById("ticketModal");
+  const content = document.getElementById("ticketDetailsContent");
+
+  if (!modal || !content) {
+    console.error("Ticket modal elements not found");
+    return;
+  }
+console.log("View Details clicked");
+  modal.style.display = "block";
+  content.innerHTML = "Loading...";
+
+  try {
+    const res = await fetch(`/api/ticket-details?driverId=${encodeURIComponent(driverId)}`);
+    const result = await res.json();
+
+    if (!res.ok) {
+      throw new Error(result.error || "Failed to fetch ticket details");
+    }
+
+    renderTicketDetails(result.data);
+  } catch (err) {
+    console.error("Ticket details error:", err);
+    content.innerHTML = "Error loading details";
+  }
+}
+
+function closeTicketModal() {
+  const modal = document.getElementById("ticketModal");
+  if (modal) {
+    modal.style.display = "none";
+  }
+}
+
+function renderTicketDetails(rows) {
+  const container = document.getElementById("ticketDetailsContent");
+
+  if (!container) return;
+
+  if (!rows || rows.length === 0) {
+    container.innerHTML = "No data found";
+    return;
+  }
+
+  const columns = Object.keys(rows[0]);
+
+  container.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          ${columns.map(col => `<th>${col}</th>`).join("")}
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(row => `
+          <tr>
+            ${columns.map(col => `<td>${row[col] ?? "-"}</td>`).join("")}
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+async function loadCsatDetails(driverId) {
+  const container = document.getElementById("csatDetailsContent");
+  container.innerHTML = "Loading...";
+
+  try {
+    const res = await fetch(`/api/csat-details?driverId=${encodeURIComponent(driverId)}`);
+    const result = await res.json();
+
+    if (!res.ok) {
+      throw new Error(result.error || "Failed to fetch CSAT details");
+    }
+
+    renderCsatDetails(result.data);
+  } catch (err) {
+    console.error("CSAT details error:", err);
+    container.innerHTML = "Error loading data";
+  }
+}
+
+function renderCsatDetails(rows) {
+  const container = document.getElementById("csatDetailsContent");
+
+  if (!rows || rows.length === 0) {
+    container.innerHTML = "No Data Found";
+    return;
+  }
+
+  container.innerHTML = `
+    <table class="csat-table">
+      <thead>
+        <tr>
+          <th>Ticket</th>
+          <th>Issue</th>
+          <th>Resolution</th>
+          <th>CSAT</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(row => `
+          <tr>
+            <td>${row.ticket ?? "-"}</td>
+            <td>${row.Issue_Name ?? row.issue_name ?? "-"}</td>
+            <td>${row.Resolution ?? row.resolution ?? "-"}</td>
+            <td>${renderCsatTag(row.CSAT ?? row.csat)}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderCsatTag(score) {
+  if (!score) {
+    return `<span class="csat-tag csat-grey">NA</span>`;
+  }
+
+  const val = score.toString().toLowerCase();
+
+  if (val.includes("dissatisfied")) { 
+    return `<span class="csat-tag csat-red">Dissatisfied</span>`;
+  } else if (val.includes("satisfied")) {
+    return `<span class="csat-tag csat-green">Satisfied</span>`;
+  } else {
+    return `<span class="csat-tag csat-grey">${score}</span>`;
+  }
+}
+
+</script>

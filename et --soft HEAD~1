@@ -1,0 +1,20 @@
+[33mb9c1664[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mbaas_distributor[m[33m)[m BAAS_Distributor_Testing
+[33m4fa1be7[m[33m ([m[1;31morigin/baas_distributor[m[33m)[m BAAS_Distributor_Testing
+[33m7c67c0d[m[33m ([m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m)[m IST UTC Bug Charging
+[33m4f12800[m Deltalake to Iceberg Final
+[33m4589f24[m Deltalake to Iceberg
+[33m2327aed[m Dissatisfied Bug
+[33m2a0a73b[m Mosfet Time IST Bug
+[33mb875bcf[m Charging Tags and Duration
+[33mc00879c[m Range Tag Fix for lower=0
+[33m762a69c[m Range Tag Fix for lower=0
+[33mee5efcf[m CSAT Raw
+[33m3362cc5[m Ticket Modal
+[33mb5f09f6[m API Order Change
+[33m9df8339[m TMS Data Visibility
+[33m6bb639a[m TMS Link
+[33m6bb0ca7[m Update IOT Live Data
+[33mc466aa6[m Update CSAT
+[33md2ec82f[m Update dashboard sections and suggestions
+[33m62824c2[m V1.1 changes -UI and backend
+[33m12c2674[m Initial commit
